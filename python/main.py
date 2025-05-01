@@ -84,7 +84,9 @@ if __name__ == '__main__':
     
     if args.inference_only:
         model.eval()
-        t_test = evaluate(model, dataset, args)
+        t_test, popularity_results = evaluate(model, dataset, args)
+        print('popularity results:')
+        print(popularity_results)
         print('test (NDCG@10: %.4f, HR@10: %.4f)' % (t_test[0], t_test[1]))
     
     # ce_criterion = torch.nn.CrossEntropyLoss()
@@ -111,17 +113,19 @@ if __name__ == '__main__':
             for param in model.item_emb.parameters(): loss += args.l2_emb * torch.norm(param)
             loss.backward()
             adam_optimizer.step()
-            print("loss in epoch {} iteration {}: {}".format(epoch, step, loss.item())) # expected 0.4~0.6 after init few epochs
 
         if epoch % 20 == 0:
+            print("loss in epoch {} iteration {}: {}".format(epoch, step, loss.item())) # expected 0.4~0.6 after init few epochs
             model.eval()
             t1 = time.time() - t0
             T += t1
             print('Evaluating', end='')
-            t_test = evaluate(model, dataset, args)
+            t_test, popularity_results = evaluate(model, dataset, args)
             t_valid = evaluate_valid(model, dataset, args)
             print('epoch:%d, time: %f(s), valid (NDCG@10: %.4f, HR@10: %.4f), test (NDCG@10: %.4f, HR@10: %.4f)'
                     % (epoch, T, t_valid[0], t_valid[1], t_test[0], t_test[1]))
+            print('popularity results:')
+            print(popularity_results)
 
             if t_valid[0] > best_val_ndcg or t_valid[1] > best_val_hr or t_test[0] > best_test_ndcg or t_test[1] > best_test_hr:
                 best_val_ndcg = max(t_valid[0], best_val_ndcg)

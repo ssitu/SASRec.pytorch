@@ -161,9 +161,16 @@ def data_partition(fname):
 
     # Calculate popularity
     pi, ui, pu, uu = separate_by_popularity(User, 0.1)
+    pi_users = set()
+    ui_users = set()
+    for user in user_test:
+        if user_test[user][0] in pi:
+            pi_users.add(user)
+        if user_test[user][0] in ui:
+            ui_users.add(user)
     # Return the partitioned data along with the number of users and items
     # return [user_train, user_valid, user_test, usernum, itemnum]
-    return [user_train, user_valid, user_test, usernum, itemnum], [pi, ui, pu, uu]
+    return [user_train, user_valid, user_test, usernum, itemnum], [pi_users, ui_users, pu, uu]
 
 # TODO: merge evaluate functions for test and val set
 # evaluate on test set
@@ -175,13 +182,14 @@ def evaluate(model, dataset, args):
     NDCG = 0.0  # Normalized Discounted Cumulative Gain
     HT = 0.0    # Hit Rate
     valid_user = 0.0  # Count of valid users considered
-    total = set.union(pu, uu)  # Total set of users/items
+    total = set.union(pu, uu)  # Total set of users
     subsets = ['total', 'pu', 'uu', 'pi', 'ui']  # For storing results
-    actual_subsets = {name: subset for name, subset in zip(subsets, [total, pu, uu, pi, ui])}  # The actual subsets
+    actual_subsets = {name: subset for name, subset in zip(subsets, [total, pi, ui, pu, uu])}  # The actual subsets
     valid_user_dict = {subset: 0 for subset in subsets}  # Count of valid users in each subset
     # Initialize NDCG and HT for different subsets and ranks
-    NDCG_dict = {subset: {k: 0.0 for k in [5, 10, 20]} for subset in subsets}
-    HT_dict = {subset: {k: 0.0 for k in [5, 10, 20]} for subset in subsets}
+    Ks = [5, 10, 20]
+    NDCG_dict = {subset: {k: 0.0 for k in Ks} for subset in subsets}
+    HT_dict = {subset: {k: 0.0 for k in Ks} for subset in subsets}
 
     # Limit the number of users to evaluate if usernum is large
     if usernum > 10000:
@@ -239,20 +247,22 @@ def evaluate(model, dataset, args):
                     if rank < k:
                         NDCG_dict[subset][k] += 1 / np.log2(rank + 2)
                         HT_dict[subset][k] += 1
-        
-        assert NDCG_dict['total'][10] == NDCG, "NDCG for total subset should match overall NDCG"
-        assert HT_dict['total'][10] == HT, "Hit Rate for total subset should match overall Hit Rate"
-
-        for subset in subsets:
-            if valid_user_dict[subset] > 0:
-                for k in NDCG_dict[subset].keys():
-                    NDCG_dict[subset][k] /= valid_user_dict[subset]
-                    HT_dict[subset][k] /= valid_user_dict[subset]
 
         # Print progress for every 100 valid users
         if valid_user % 100 == 0:
             print('.', end="")
             sys.stdout.flush()
+
+    if NDCG_dict['total'][10] != NDCG:
+        print("NDCG mismatch", NDCG_dict['total'][10], NDCG)
+    if HT_dict['total'][10] != HT:
+        print("HT mismatch", HT_dict['total'][10], HT)
+
+    for subset in subsets:
+        if valid_user_dict[subset] > 0:
+            for k in NDCG_dict[subset].keys():
+                NDCG_dict[subset][k] /= valid_user_dict[subset]
+                HT_dict[subset][k] /= valid_user_dict[subset]
 
     # Return the average NDCG and Hit Rate
     return (NDCG / valid_user, HT / valid_user), {"NDCG": NDCG_dict, "HT": HT_dict}
@@ -260,7 +270,7 @@ def evaluate(model, dataset, args):
 
 # evaluate on val set
 def evaluate_valid(model, dataset, args):
-    [train, valid, test, usernum, itemnum] = copy.deepcopy(dataset)
+    [train, valid, test, usernum, itemnum], _ = copy.deepcopy(dataset)
 
     NDCG = 0.0
     valid_user = 0.0

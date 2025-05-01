@@ -49,7 +49,7 @@ for l in pbar:
         itemid = itemnum
         itemmap[asin] = itemid
     User[userid].append([time, itemid])
-    pbar.set_postfix_str('usernum: %d, itemnum: %d' % (line, usernum, itemnum))
+    pbar.set_postfix_str('usernum: %d, itemnum: %d' % (usernum, itemnum))
 # sort reviews in User according to time
 
 for userid in User.keys():

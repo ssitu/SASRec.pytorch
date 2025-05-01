@@ -1,6 +1,7 @@
 import gzip
 from collections import defaultdict
 from datetime import datetime
+from tqdm import tqdm
 
 
 def parse(path):
@@ -21,7 +22,7 @@ usernum = 0
 itemmap = dict()
 itemnum = 0
 User = dict()
-for l in parse(gz_file):
+for l in tqdm(parse(gz_file)):
     line += 1
     asin = l['asin']
     rev = l['reviewerID']

@@ -17,13 +17,18 @@ line = 0
 output_data = 'Books.txt'
 gz_file = 'reviews_Books_5.json.gz'
 
+for l in tqdm(parse(gz_file), unit='lines'):
+    line += 1
+    countU[l['asin']] += 1
+    countP[l['reviewerID']] += 1
+
 usermap = dict()
 usernum = 0
 itemmap = dict()
 itemnum = 0
 User = dict()
-for l in tqdm(parse(gz_file)):
-    line += 1
+pbar = tqdm(parse(gz_file), total=line, unit='lines')
+for l in pbar:
     asin = l['asin']
     rev = l['reviewerID']
     time = l['unixReviewTime']
@@ -44,6 +49,7 @@ for l in tqdm(parse(gz_file)):
         itemid = itemnum
         itemmap[asin] = itemid
     User[userid].append([time, itemid])
+    pbar.set_postfix_str('usernum: %d, itemnum: %d' % (line, usernum, itemnum))
 # sort reviews in User according to time
 
 for userid in User.keys():

@@ -41,7 +41,7 @@ if __name__ == '__main__':
     # global dataset
     dataset = data_partition(args.dataset)
 
-    [user_train, user_valid, user_test, usernum, itemnum] = dataset
+    [user_train, user_valid, user_test, usernum, itemnum], _ = dataset
     # num_batch = len(user_train) // args.batch_size # tail? + ((len(user_train) % args.batch_size) != 0)
     num_batch = (len(user_train) - 1) // args.batch_size + 1
     cc = 0.0

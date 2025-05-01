@@ -17,10 +17,14 @@ line = 0
 output_data = 'Books.txt'
 gz_file = 'reviews_Books_5.json.gz'
 
+user_id_key = 'reviewerID'
+item_id_key = 'asin'
+time_key = 'unixReviewTime'
+
 for l in tqdm(parse(gz_file), unit='lines'):
     line += 1
-    countU[l['reviewerID']] += 1
-    countP[l['asin']] += 1
+    countU[l[user_id_key]] += 1
+    countP[l[item_id_key]] += 1
 
 usermap = dict()
 usernum = 0
@@ -29,9 +33,9 @@ itemnum = 0
 User = dict()
 pbar = tqdm(parse(gz_file), total=line, unit='lines')
 for l in pbar:
-    rev = l['reviewerID']
-    asin = l['asin']
-    time = l['unixReviewTime']
+    rev = l[user_id_key]
+    asin = l[item_id_key]
+    time = l[time_key]
     if countU[rev] < 5 or countP[asin] < 5:
         continue
 

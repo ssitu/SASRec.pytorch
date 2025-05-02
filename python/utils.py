@@ -164,6 +164,9 @@ def data_partition(fname):
     pi_users = set()
     ui_users = set()
     for user in user_test:
+        # Check if the user has a test sample
+        if user not in user_test or len(user_test[user]) == 0:
+            continue
         if user_test[user][0] in pi:
             pi_users.add(user)
         if user_test[user][0] in ui:
@@ -220,7 +223,7 @@ def evaluate(model, dataset, args):
 
         # Prepare the list of items to evaluate
         item_idx = [test[u][0]]  # Include the test item
-        for _ in range(100):  # Add 100 negative samples
+        for _ in range(1000):  # Add 1000 negative samples
             t = np.random.randint(1, itemnum + 1)
             while t in rated:  # Ensure the item is not already rated
                 t = np.random.randint(1, itemnum + 1)

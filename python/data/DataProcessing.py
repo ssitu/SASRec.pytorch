@@ -5,24 +5,45 @@ from tqdm import tqdm
 
 
 def parse(path):
-    g = gzip.open(path, 'r')
+    # g = gzip.open(path, 'r')
+    g = open(path, 'r')
     for l in g:
-        yield eval(l)
+        # yield eval(l)
+        # yield l.decode('utf-8').split()
+        yield l.split('::')
 
 
 countU = defaultdict(lambda: 0)
 countP = defaultdict(lambda: 0)
 line = 0
 
-output_data = 'Books.txt'
-gz_file = 'reviews_Books_5.json.gz'
+# output_data = 'Books.txt'
+# gz_file = 'reviews_Books_5.json.gz'
+# user_id_key = 'reviewerID'
+# item_id_key = 'asin'
+# time_key = 'unixReviewTime'
 
-user_id_key = 'reviewerID'
-item_id_key = 'asin'
-time_key = 'unixReviewTime'
+# output_data = 'gowalla.txt'
+# gz_file = 'loc-gowalla_totalCheckins.txt.gz'
+# user_id_key = 0
+# item_id_key = 4
+# time_key = 1
+
+# output_data = 'yelp.txt'
+# gz_file = 'yelp_academic_dataset_review.json'
+# user_id_key = 'user_id'
+# item_id_key = 'business_id'
+# time_key = 'date'
+
+output_data = 'ml10m.txt'
+gz_file = 'ratings.dat'
+user_id_key = 0
+item_id_key = 1
+time_key = 3
 
 for l in tqdm(parse(gz_file), unit='lines'):
     line += 1
+    time = l[time_key]
     countU[l[user_id_key]] += 1
     countP[l[item_id_key]] += 1
 
